@@ -8,6 +8,10 @@
         KEY_DOWN = 40,
         canvas = null,
         ctx = null,
+        lastUpdate = 0,
+        FPS = 0,
+        frames = 0,
+        acumDelta = 0,
         //player = null, //In replacement of the x and y variables
         body = new Array(), //For getting a snake instead of a rectangle
         food = null,
@@ -290,9 +294,23 @@
         paint(ctx);
     }
     function run() {
-        //For having the game in a rate of 20 cyc/sec
-        setTimeout(run, 50);
+        window.requestAnimationFrame(run);
+        //setTimeout(run, 5);
+        var now = Date.now(),
+            deltaTime = (now - lastUpdate) / 1000;
+        if (deltaTime > 1) {
+            deltaTime = 0;
+        }
+        lastUpdate = now;
+        frames += 1;
+        acumDelta += deltaTime;
+        if (acumDelta > 1) {
+            FPS = frames;
+            frames = 0;
+            acumDelta -= 1;
+        }
         act();
+        paint(ctx);
     }
     function init() {
         //Gets the canvas

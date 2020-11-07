@@ -49,6 +49,17 @@ function Rectangle(x, y, width, height) {
             this.y + this.height > rect.y);
         }
     };
+    this.drawImage = function (ctx, img) {
+        if (img == null) {
+            window.console.warn('Missing parameters on function drawImage');
+        } else {
+            if (img.width) {
+                ctx.drawImage(img, this.x, this.y);
+            } else {
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+            }
+        }
+    };
     this.fill = function (ctx) {
         if (ctx == null) {
             window.console.warn('Missing parameters on function fill');
@@ -92,7 +103,7 @@ function paint(ctx) {
     // Draw food
     //ctx.fillStyle = '#f00';
     //food.fill(ctx);
-    ctx.drawImage(iFood, food.x, food.y);
+    food.drawImage(ctx, iFood);
     //To know which was the last key press
     ctx.fillStyle = '#fff';
     //ctx.fillText('Last Press: ' + lastPress, 0, 20);

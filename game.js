@@ -6,8 +6,10 @@ var KEY_ENTER = 13,
     canvas = null,
     ctx = null,
     player = null, //In replacement of the x and y variables
+    food = null,
     lastPress = null,
     dir = 0, //Saves the direction of our rectangle
+    score = 0,
     pause = true; //If the game is in pause
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -21,16 +23,49 @@ window.requestAnimationFrame = (function () {
 document.addEventListener('keydown', function (evt) {
     lastPress = evt.which;
     }, false);
+//To know if our rectangle is in intersection with other
+function Rectangle(x, y, width, height) {
+    this.x = (x == null) ? 0 : x;
+    this.y = (y == null) ? 0 : y;
+    this.width = (width == null) ? 0 : width;
+    this.height = (height == null) ? this.width : height;
+    this.intersects = function (rect) {
+        if (rect == null) {
+            window.console.warn('Missing parameters on function intersects');
+        } else {
+            return (this.x < rect.x + rect.width &&
+            this.x + this.width > rect.x &&
+            this.y < rect.y + rect.height &&
+            this.y + this.height > rect.y);
+        }
+    };
+    this.fill = function (ctx) {
+        if (ctx == null) {
+            window.console.warn('Missing parameters on function fill');
+        } else {
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    };
+}
+//Random integers
+function random(max) {
+    return Math.floor(Math.random() * max);
+}
 function paint(ctx) {
     //Clean canvas
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0, canvas.width, canvas.height);
-    //Draw square
+    //Draw player
     ctx.fillStyle = '#0f0';
-    //x,y,width,height
-    ctx.fillRect(player.x, player.y, 10, 10);
+    player.fill(ctx);
+    // Draw food
+    ctx.fillStyle = '#f00';
+    food.fill(ctx);
     //To know which was the last key press
-    ctx.fillText('Last Press: ' + lastPress, 0, 20);
+    ctx.fillStyle = '#fff';
+    //ctx.fillText('Last Press: ' + lastPress, 0, 20);
+    // Draw score
+    ctx.fillText('Score: ' + score, 0, 10);
     // Draw pause
     if (pause) {
         ctx.textAlign = 'center';
@@ -68,7 +103,7 @@ function act(){
             player.x -= 10;
         }
         // Out Screen
-        if (palyer.x > canvas.width) {
+        if (player.x > canvas.width) {
         player.x = 0;
         }
         if (player.y > canvas.height) {
@@ -80,6 +115,13 @@ function act(){
         if (player.y < 0) {
         player.y = canvas.height;
         }
+        // Food Intersects
+        if (player.intersects(food)) {
+            score += 1;
+            //For food to appear each 10 px
+            food.x = random(canvas.width / 10 - 1) * 10;
+            food.y = random(canvas.height / 10 - 1) * 10;
+            }
     }
     // Pause/Unpause
     if (lastPress == KEY_ENTER) {
@@ -101,36 +143,12 @@ function init() {
     canvas = document.getElementById('canvas');
     //Gets the context, necessary for painting
     ctx = canvas.getContext('2d');
+    // Create player and food
+    player = new Rectangle(40, 40, 10, 10);
+    food = new Rectangle(80, 80, 10, 10);
     //Start game
     run();
     repaint();
-    // Create player
-    player = new Rectangle(40, 40, 10, 10);
-    player.fill(ctx);
 }
 //For init to start when page load in order to avoid errors
 window.addEventListener('load', init, false);
-//To know if our rectangle is in intersection with other
-function Rectangle(player.x, player.y, width, height) {
-    this.player.x = (player.x == null) ? 0 : player.x;
-    this..player.y = (player.y == null) ? 0 : player.y;
-    this.width = (width == null) ? 0 : width;
-    this.height = (height == null) ? this.width : height;
-    this.intersects = function (rect) {
-        if (rect == null) {
-            window.console.warn('Missing parameters on function intersects');
-        } else {
-            return (this.player.x < rect.player.x + rect.width &&
-            this.player.x + this.width > rect.player.x &&
-            this.player.y < rect.player.y + rect.height &&
-            this.player.y + this.height > rect.player.y);
-        }
-    };
-    this.fill = function (ctx) {
-        if (ctx == null) {
-            window.console.warn('Missing parameters on function fill');
-        } else {
-            ctx.fillRect(this.player.x, this.player.y, this.width, this.height);
-        }
-    };
-}

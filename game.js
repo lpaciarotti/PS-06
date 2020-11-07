@@ -189,10 +189,10 @@ function init() {
     run();
     repaint();
     // Create walls
-    wall.push(new Rectangle(100, 50, 10, 10));
-    wall.push(new Rectangle(100, 100, 10, 10));
-    wall.push(new Rectangle(200, 50, 10, 10));
-    wall.push(new Rectangle(200, 100, 10, 10));
+    // wall.push(new Rectangle(100, 50, 10, 10));
+    // wall.push(new Rectangle(100, 100, 10, 10));
+    // wall.push(new Rectangle(200, 50, 10, 10));
+    // wall.push(new Rectangle(200, 100, 10, 10));
 }
 //For init to start when page load in order to avoid errors
 window.addEventListener('load', init, false);

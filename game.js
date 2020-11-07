@@ -29,6 +29,19 @@ window.requestAnimationFrame = (function () {
 // Load assets
 iBody.src = 'assets/body.png';
 iFood.src = 'assets/fruit.png';
+function canPlayOgg() {
+    var aud = new Audio();
+    if (aud.canPlayType('audio/ogg').replace(/no/, '')) {
+        return true;
+    } else {
+        return false;
+    }
+}
+if (canPlayOgg()) {
+    aEat.src="assets/chomp.oga";
+} else {
+    aEat.src="assets/chomp.m4a";
+}
 //For saving the press key
 document.addEventListener('keydown', function (evt) {
     lastPress = evt.which;

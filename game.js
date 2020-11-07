@@ -10,7 +10,9 @@ var KEY_ENTER = 13,
     lastPress = null,
     dir = 0, //Saves the direction of our rectangle
     score = 0,
-    pause = true; //If the game is in pause
+    pause = true, //If the game is in pause
+    wall = new Array(),
+    gameover = true;
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -51,13 +53,29 @@ function Rectangle(x, y, width, height) {
 function random(max) {
     return Math.floor(Math.random() * max);
 }
+function reset() {
+    score = 0;
+    dir = 1;
+    player.x = 40;
+    player.y = 40;
+    food.x = random(canvas.width / 10 - 1) * 10;
+    food.y = random(canvas.height / 10 - 1) * 10;
+    gameover = false;
+}
 function paint(ctx) {
+    var i = 0;
+        l = 0;
     //Clean canvas
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0, canvas.width, canvas.height);
     //Draw player
     ctx.fillStyle = '#0f0';
     player.fill(ctx);
+    // Draw walls
+    ctx.fillStyle = '#999';
+    for (i = 0, l = wall.length; i < l; i += 1) {
+        wall[i].fill(ctx);
+    }
     // Draw food
     ctx.fillStyle = '#f00';
     food.fill(ctx);
@@ -69,13 +87,23 @@ function paint(ctx) {
     // Draw pause
     if (pause) {
         ctx.textAlign = 'center';
+    if (gameover) {
+        ctx.fillText('GAME OVER', 150, 75);
+    } else {
         ctx.fillText('PAUSE', 150, 75);
+    }
         ctx.textAlign = 'left';
     }
 }
 //For playing the game if it isn't in pause
 function act(){
+    var i,
+        l;
     if (!pause) {
+        // GameOver Reset
+        if (gameover) {
+            reset();
+        }
         // Change Direction
         if (lastPress == KEY_UP) {
             dir = 0;
@@ -122,6 +150,17 @@ function act(){
             food.x = random(canvas.width / 10 - 1) * 10;
             food.y = random(canvas.height / 10 - 1) * 10;
             }
+        // Wall Intersects
+        for (i = 0, l = wall.length; i < l; i += 1) {
+            if (food.intersects(wall[i])) {
+                food.x = random(canvas.width / 10 - 1) * 10;
+                food.y = random(canvas.height / 10 - 1) * 10;
+            }
+            if (player.intersects(wall[i])) {
+                gameover = true;
+                pause = true;
+            }
+        }
     }
     // Pause/Unpause
     if (lastPress == KEY_ENTER) {
@@ -149,6 +188,11 @@ function init() {
     //Start game
     run();
     repaint();
+    // Create walls
+    wall.push(new Rectangle(100, 50, 10, 10));
+    wall.push(new Rectangle(100, 100, 10, 10));
+    wall.push(new Rectangle(200, 50, 10, 10));
+    wall.push(new Rectangle(200, 100, 10, 10));
 }
 //For init to start when page load in order to avoid errors
 window.addEventListener('load', init, false);

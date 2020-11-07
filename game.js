@@ -13,7 +13,11 @@ var KEY_ENTER = 13,
     score = 0,
     pause = true, //If the game is in pause
     //wall = new Array(),
-    gameover = true;
+    gameover = true
+    iBody = new Image(),
+    iFood = new Image();
+    aEat = new Audio(),
+    aDie = new Audio();
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -22,6 +26,9 @@ window.requestAnimationFrame = (function () {
     window.setTimeout(callback, 17);
     };
 }());
+// Load assets
+iBody.src = 'assets/body.png';
+iFood.src = 'assets/fruit.png';
 //For saving the press key
 document.addEventListener('keydown', function (evt) {
     lastPress = evt.which;
@@ -72,9 +79,10 @@ function paint(ctx) {
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0, canvas.width, canvas.height);
     // Draw player
-    ctx.fillStyle = '#0f0';
+    //ctx.fillStyle = '#0f0';
     for (i = 0, l = body.length; i < l; i += 1) {
         body[i].fill(ctx);
+        ctx.drawImage(iBody, body[i].x, body[i].y);
     }
     // Draw walls
     // ctx.fillStyle = '#999';
@@ -82,8 +90,9 @@ function paint(ctx) {
     //     wall[i].fill(ctx);
     // }
     // Draw food
-    ctx.fillStyle = '#f00';
-    food.fill(ctx);
+    //ctx.fillStyle = '#f00';
+    //food.fill(ctx);
+    ctx.drawImage(iFood, food.x, food.y);
     //To know which was the last key press
     ctx.fillStyle = '#fff';
     //ctx.fillText('Last Press: ' + lastPress, 0, 20);
@@ -156,6 +165,7 @@ function act(){
         // Body Intersects
         for (i = 2, l = body.length; i < l; i += 1) {
             if (body[0].intersects(body[i])) {
+                aDie.play();
                 gameover = true;
                 pause = true;
             }
@@ -165,6 +175,7 @@ function act(){
             //Grow snake
             body.push(new Rectangle(food.x, food.y, 10, 10));
             score += 1;
+            aEat.play();
             //For food to appear each 10 px
             food.x = random(canvas.width / 10 - 1) * 10;
             food.y = random(canvas.height / 10 - 1) * 10;
@@ -212,6 +223,8 @@ function init() {
     // wall.push(new Rectangle(100, 100, 10, 10));
     // wall.push(new Rectangle(200, 50, 10, 10));
     // wall.push(new Rectangle(200, 100, 10, 10));
+    aEat.src = 'assets/chomp.oga';
+    aDie.src = 'assets/dies.oga';
 }
 //For init to start when page load in order to avoid errors
 window.addEventListener('load', init, false);

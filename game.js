@@ -13,37 +13,40 @@
         frames = 0,
         acumDelta = 0,
         //player = null, //In replacement of the x and y variables
-        body = new Array(), //For getting a snake instead of a rectangle
+        body = [], //For getting a snake instead of a rectangle
         food = null,
         lastPress = null,
         dir = 0, //Saves the direction of our rectangle
         score = 0,
         pause = true, //If the game is in pause
-        //wall = new Array(),
+        //wall = [],
         gameover = true,
+        fullscreen = false,
         iBody = new Image(),
         iFood = new Image(),
         aEat = new Audio(),
-        aDie = new Audio();
-    function resize(){
-        //To find screen proportions
-        var w = window.innerWidth / canvas.width;
-        var h = window.innerHeight / canvas.height;
-        var scale = Math.min(h, w);
-        //Assign width and height to canvas according to screen scale
-        canvas.style.width = (canvas.width * scale) + 'px';
-        canvas.style.height = (canvas.height * scale) + 'px';
-    }
-    //To resize in any moment
-    window.addEventListener('resize', resize, false);
+        aDie = new Audio(),
+        buffer = null,
+        bufferCtx = null,
+        bufferScale = 1,
+        bufferOffsetX = 0,
+        bufferOffsetY = 0;
+    //Regulating time among devices
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        function (callback) {
-        window.setTimeout(callback, 17);
-        };
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 17);
+            };
     }());
+    //For saving the press key
+    document.addEventListener('keydown', function (evt) {
+        if (evt.which >= 37 && evt.which <= 40) {
+            evt.preventDefault();
+        }
+        lastPress = evt.which;
+    }, false);
     // Load assets
     iBody.src = 'assets/body.png';
     iFood.src = 'assets/fruit.png';
@@ -60,17 +63,16 @@
     } else {
         aEat.src="assets/chomp.m4a";
     }
-    //For saving the press key
-    document.addEventListener('keydown', function (evt) {
-        lastPress = evt.which;
-        }, false);
     //To know if our rectangle is in intersection with other
     function Rectangle(x, y, width, height) {
         this.x = (x === undefined) ? 0 : x;
         this.y = (y === undefined) ? 0 : y;
         this.width = (width === undefined) ? 0 : width;
         this.height = (height === undefined) ? this.width : height;
-        /*this.intersects = function (rect) {
+    }
+    Rectangle.prototype = {
+        constructor: Rectangle,
+        intersects: function (rect) {
             if (rect === undefined) {
                 window.console.warn('Missing parameters on function intersects');
             } else {
@@ -79,15 +81,15 @@
                 this.y < rect.y + rect.height &&
                 this.y + this.height > rect.y);
             }
-        };
-        this.fill = function (ctx) {
+        },
+        fill: function (ctx) {
             if (ctx === undefined) {
                 window.console.warn('Missing parameters on function fill');
             } else {
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
-        };
-        this.drawImage = function (ctx, img) {
+        },
+        drawImage: function (ctx, img) {
             if (img === undefined) {
                 window.console.warn('Missing parameters on function drawImage');
             } else {
@@ -97,71 +99,20 @@
                     ctx.strokeRect(this.x, this.y, this.width, this.height);
                 }
             }
-        };*/
-        }
-        Rectangle.prototype = {
-            constructor: Rectangle,
-            intersects: function (rect) {
-                if (rect === undefined) {
-                    window.console.warn('Missing parameters on function intersects');
-                } else {
-                    return (this.x < rect.x + rect.width &&
-                        this.x + this.width > rect.x &&
-                        this.y < rect.y + rect.height &&
-                        this.y + this.height > rect.y);
-                }
-            },
-            fill: function (ctx) {
-                if (ctx === undefined) {
-                     window.console.warn('Missing parameters on function fill');
-                } else {
-                    ctx.fillRect(this.x, this.y, this.width, this.height);
-                }
-            },
-            drawImage: function (ctx, img) {
-                if (img === undefined) {
-                    window.console.warn('Missing parameters on function drawImage');
-                } else {
-                    if (img.width) {
-                        ctx.drawImage(img, this.x, this.y);
-                    } else {
-                        ctx.strokeRect(this.x, this.y, this.width, this.height);
-                    }
-                }
-            }
-        };
-        /*Rectangle.prototype.intersects = function (rect) {
-            if (rect === undefined) {
-                window.console.warn('Missing parameters on function intersects');
-            } else {
-                return (this.x < rect.x + rect.width &&
-                    this.x + this.width > rect.x &&
-                    this.y < rect.y + rect.height &&
-                    this.y + this.height > rect.y);
-            }
-        };
-        Rectangle.prototype.fill = function (ctx) {
-            if (ctx === undefined) {
-            window.console.warn('Missing parameters on function fill');
-        } else {
-            ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     };
-    Rectangle.prototype.drawImage = function (ctx, img) {
-        if (img === undefined) {
-            window.console.warn('Missing parameters on function drawImage');
-        } else {
-            if (img.width) {
-                ctx.drawImage(img, this.x, this.y);
-            } else {
-                ctx.strokeRect(this.x, this.y, this.width, this.height);
-            }
-        }
-    };*/
-
     //Random integers
     function random(max) {
         return Math.floor(Math.random() * max);
+    }
+    function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        var w = window.innerWidth / buffer.width;
+        var h = window.innerHeight / buffer.height;
+        bufferScale = Math.min(h, w);
+        bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
+        bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
     }
     function reset() {
         score = 0;
@@ -170,8 +121,8 @@
         body.push(new Rectangle(40, 40, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
-        food.x = random(canvas.width / 10 - 1) * 10;
-        food.y = random(canvas.height / 10 - 1) * 10;
+        food.x = random(buffer.width / 10 - 1) * 10;
+        food.y = random(buffer.height / 10 - 1) * 10;
         gameover = false;
     }
     function paint(ctx) {
@@ -179,12 +130,11 @@
             l = 0;
         //Clean canvas
         ctx.fillStyle = '#000';
-        ctx.fillRect(0,0, canvas.width, canvas.height);
+        ctx.fillRect(0,0, buffer.width, buffer.height);
         // Draw player
         //ctx.fillStyle = '#0f0';
         for (i = 0, l = body.length; i < l; i += 1) {
-            body[i].fill(ctx);
-            ctx.drawImage(iBody, body[i].x, body[i].y);
+            body[i].drawImage(ctx, iBody);
         }
         // Draw walls
         // ctx.fillStyle = '#999';
@@ -194,12 +144,13 @@
         // Draw food
         //ctx.fillStyle = '#f00';
         //food.fill(ctx);
+        ctx.strokeStyle = '#f00';
         food.drawImage(ctx, iFood);
-        //To know which was the last key press
-        ctx.fillStyle = '#fff';
-        //ctx.fillText('Last Press: ' + lastPress, 0, 20);
         // Draw score
+        ctx.fillStyle = '#fff';
         ctx.fillText('Score: ' + score, 0, 10);
+        // Debug last key pressed
+        //ctx.fillText('Last Press: '+lastPress,0,20);
         // Draw pause
         if (pause) {
             ctx.textAlign = 'center';
@@ -213,8 +164,8 @@
     }
     //For playing the game if it isn't in pause
     function act(){
-        var i,
-            l;
+        var i=0,
+            l=0;
         if (!pause) {
             // GameOver Reset
             if (gameover) {
@@ -252,17 +203,28 @@
                 body[0].x -= 10;
             }
             // Out Screen
-            if (body[0].x > canvas.width) {
-            body[0].x = 0;
+            if (body[0].x > canvas.width - body[0].width) {
+                body[0].x = 0;
             }
-            if (body[0].y > canvas.height) {
-            body[0].y = 0;
+            if (body[0].y > canvas.height - body[0].height) {
+                body[0].y = 0;
             }
             if (body[0].x < 0) {
-            body[0].x = canvas.width;
+                body[0].x = canvas.width - body[0].width;
             }
             if (body[0].y < 0) {
-            body[0].y = canvas.height;
+                body[0].y = canvas.height - body[0].height;
+            }
+            // Food Intersects
+            if (body[0].intersects(food)) {
+                //Grow snake
+                body.push(new Rectangle(0, 0, 10, 10));
+                //body.push(new Rectangle(food.x, food.y, 10, 10));
+                score += 1;
+                aEat.play();
+                //For food to appear each 10 px
+                food.x = random(buffer.width / 10 - 1) * 10;
+                food.y = random(buffer.height / 10 - 1) * 10;
             }
             // Body Intersects
             for (i = 2, l = body.length; i < l; i += 1) {
@@ -271,16 +233,6 @@
                     gameover = true;
                     pause = true;
                 }
-            }
-            // Food Intersects
-            if (body[0].intersects(food)) {
-                //Grow snake
-                body.push(new Rectangle(food.x, food.y, 10, 10));
-                score += 1;
-                aEat.play();
-                //For food to appear each 10 px
-                food.x = random(canvas.width / 10 - 1) * 10;
-                food.y = random(canvas.height / 10 - 1) * 10;
             }
             // Wall Intersects
             // for (i = 0, l = wall.length; i < l; i += 1) {
@@ -302,38 +254,51 @@
     }
     function repaint() {
         window.requestAnimationFrame(repaint);
-        paint(ctx);
+        paint(bufferCtx);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height);
+        //Pixel effect images
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
+        ctx.msImageSmoothingEnabled = false;
+        ctx.oImageSmoothingEnabled = false;
     }
     function run() {
-        window.requestAnimationFrame(run);
-        //setTimeout(run, 50);
-        var now = Date.now(),
-            deltaTime = (now - lastUpdate) / 1000;
-        if (deltaTime > 1) {
-            deltaTime = 0;
-        }
-        lastUpdate = now;
-        frames += 1;
-        acumDelta += deltaTime;
-        if (acumDelta > 1) {
-            FPS = frames;
-            frames = 0;
-            acumDelta -= 1;
-        }
+        //window.requestAnimationFrame(run);
+        setTimeout(run, 50);
+        // var now = Date.now(),
+        //     deltaTime = (now - lastUpdate) / 1000;
+        // if (deltaTime > 1) {
+        //     deltaTime = 0;
+        // }
+        // lastUpdate = now;
+        // frames += 1;
+        // acumDelta += deltaTime;
+        // if (acumDelta > 1) {
+        //     FPS = frames;
+        //     frames = 0;
+        //     acumDelta -= 1;
+        // }
         act();
-        paint(ctx);
+        //paint(ctx);
     }
     function init() {
         //Gets the canvas
         canvas = document.getElementById('canvas');
         //Gets the context, necessary for painting
         ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 300;
+        // Load buffer
+        buffer = document.createElement('canvas');
+        bufferCtx = buffer.getContext('2d');
+        buffer.width = 300;
+        buffer.height = 150;
         // Create player and food
-        body[0] = new Rectangle(40, 40, 10, 10);
+        //body[0] = new Rectangle(40, 40, 10, 10);
         food = new Rectangle(80, 80, 10, 10);
-        //Start game
-        run();
-        repaint();
         // Create walls
         // wall.push(new Rectangle(100, 50, 10, 10));
         // wall.push(new Rectangle(100, 100, 10, 10));
@@ -341,8 +306,13 @@
         // wall.push(new Rectangle(200, 100, 10, 10));
         aEat.src = 'assets/chomp.oga';
         aDie.src = 'assets/dies.oga';
+        //Start game
         resize();
+        run();
+        repaint();
     }
     //For init to start when page load in order to avoid errors
     window.addEventListener('load', init, false);
+    //To resize in any moment
+    window.addEventListener('resize', resize, false);
 }(window));

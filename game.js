@@ -295,7 +295,7 @@
     }
     function run() {
         window.requestAnimationFrame(run);
-        //setTimeout(run, 5);
+        //setTimeout(run, 50);
         var now = Date.now(),
             deltaTime = (now - lastUpdate) / 1000;
         if (deltaTime > 1) {

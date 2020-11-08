@@ -25,6 +25,17 @@
         iFood = new Image(),
         aEat = new Audio(),
         aDie = new Audio();
+    function resize(){
+        //To find screen proportions
+        var w = window.innerWidth / canvas.width;
+        var h = window.innerHeight / canvas.height;
+        var scale = Math.min(h, w);
+        //Assign width and height to canvas according to screen scale
+        canvas.style.width = (canvas.width * scale) + 'px';
+        canvas.style.height = (canvas.height * scale) + 'px';
+    }
+    //To resize in any moment
+    window.addEventListener('resize', resize, false);
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
         window.mozRequestAnimationFrame ||
@@ -330,6 +341,7 @@
         // wall.push(new Rectangle(200, 100, 10, 10));
         aEat.src = 'assets/chomp.oga';
         aDie.src = 'assets/dies.oga';
+        resize();
     }
     //For init to start when page load in order to avoid errors
     window.addEventListener('load', init, false);

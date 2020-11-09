@@ -132,31 +132,31 @@
             posHighscore += 1;
         }
         highscores.splice(posHighscore, 0, score);
-        if (highscores.length > 10) {
-            highscores.length = 10;
+            if (highscores.length > 10) {
+                highscores.length = 10;
         }
         localStorage.highscores = highscores.join(',');
     }
-    function resize(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        var w = window.innerWidth / buffer.width;
-        var h = window.innerHeight / buffer.height;
-        bufferScale = Math.min(h, w);
-        bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
-        bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
-    }
-    function reset() {
-        score = 0;
-        dir = 1;
-        body.length = 0;
-        body.push(new Rectangle(40, 40, 10, 10));
-        body.push(new Rectangle(0, 0, 10, 10));
-        body.push(new Rectangle(0, 0, 10, 10));
-        food.x = random(buffer.width / 10 - 1) * 10;
-        food.y = random(buffer.height / 10 - 1) * 10;
-        gameover = false;
-    }
+    // function resize(){
+    //     canvas.width = window.innerWidth;
+    //     canvas.height = window.innerHeight;
+    //     var w = window.innerWidth / buffer.width;
+    //     var h = window.innerHeight / buffer.height;
+    //     bufferScale = Math.min(h, w);
+    //     bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
+    //     bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
+    // }
+    // function reset() {
+    //     score = 0;
+    //     dir = 1;
+    //     body.length = 0;
+    //     body.push(new Rectangle(40, 40, 10, 10));
+    //     body.push(new Rectangle(0, 0, 10, 10));
+    //     body.push(new Rectangle(0, 0, 10, 10));
+    //     food.x = random(buffer.width / 10 - 1) * 10;
+    //     food.y = random(buffer.height / 10 - 1) * 10;
+    //     gameover = false;
+    // }
     // function paint(ctx) {
     //     var i = 0,
     //         l = 0;
@@ -327,13 +327,13 @@
         canvas = document.getElementById('canvas');
         //Gets the context, necessary for painting
         ctx = canvas.getContext('2d');
-        canvas.width = 600;
-        canvas.height = 300;
+        // canvas.width = 600;
+        // canvas.height = 300;
         // Load buffer
-        buffer = document.createElement('canvas');
-        bufferCtx = buffer.getContext('2d');
-        buffer.width = 300;
-        buffer.height = 150;
+        // buffer = document.createElement('canvas');
+        // bufferCtx = buffer.getContext('2d');
+        // buffer.width = 300;
+        // buffer.height = 150;
         // Create player and food
         //body[0] = new Rectangle(40, 40, 10, 10);
         food = new Rectangle(80, 80, 10, 10);
@@ -349,9 +349,9 @@
             highscores = localStorage.highscores.split(',');
         }
         //Start game
-        resize();
         run();
         repaint();
+        //resize();
     }
     // Main Scene
     mainScene = new Scene();
@@ -394,7 +394,7 @@
         // Draw player
         ctx.strokeStyle = '#0f0';
         for (i = 0, l = body.length; i < l; i += 1) {
-        body[i].drawImage(ctx, iBody);
+            body[i].drawImage(ctx, iBody);
         }
         // Draw walls
         //ctx.fillStyle = '#999';
@@ -498,6 +498,7 @@
                     gameover = true;
                     pause = true;
                     aDie.play();
+                    addHighscore(score);
                 }
             }
         }
@@ -520,7 +521,7 @@
         ctx.textAlign = 'center';
         ctx.fillText('HIGH SCORES', 150, 30);
         // Draw high scores
-        ctx.textAlign = 'center';
+        ctx.textAlign = 'right';
         for (i = 0, l = highscores.length; i < l; i += 1) {
             if (i === posHighscore) {
                 ctx.fillText('*' + highscores[i], 180, 40 + i * 10);

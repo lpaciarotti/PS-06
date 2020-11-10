@@ -15,6 +15,7 @@
         //player = null, //In replacement of the x and y variables
         body = [], //For getting a snake instead of a rectangle
         food = null,
+        coin = null,
         lastPress = null,
         dir = 0, //Saves the direction of our rectangle
         score = 0,
@@ -31,13 +32,15 @@
         fullscreen = false,
         iBody = new Image(),
         iFood = new Image(),
+        iCoin = new Image(),
         aEat = new Audio(),
         aDie = new Audio(),
         buffer = null,
         bufferCtx = null,
         bufferScale = 1,
         bufferOffsetX = 0,
-        bufferOffsetY = 0;
+        bufferOffsetY = 0,
+        baseURL =  'www.jsonplaceholder.com?score=0';
     //Regulating time among devices
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -57,6 +60,7 @@
     // Load assets
     iBody.src = 'assets/body.png';
     iFood.src = 'assets/fruit.png';
+    iCoin.src = 'assets/coin.png';
     function canPlayOgg() {
         var aud = new Audio();
         if (aud.canPlayType('audio/ogg').replace(/no/, '')) {
@@ -337,6 +341,7 @@
         // Create player and food
         //body[0] = new Rectangle(40, 40, 10, 10);
         food = new Rectangle(80, 80, 10, 10);
+        coin = new Rectangle(50,50,10,10);
         // Create walls
         // wall.push(new Rectangle(100, 50, 10, 10));
         // wall.push(new Rectangle(100, 100, 10, 10));
@@ -352,6 +357,19 @@
         run();
         repaint();
         //resize();
+    }
+    //Change query param
+    function changeQueryParam (){
+        fetch('https://www.jsonplaceholder.com?score=0')
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (json) {
+            return console.log('Score sent succesfully');
+        })
+        .catch(function (error) {
+            return console.log('Error trying to send score');
+        });
     }
     // Main Scene
     mainScene = new Scene();
@@ -383,6 +401,8 @@
         body.push(new Rectangle(0, 0, 10, 10));
         food.x = random(canvas.width / 10 - 1) * 10;
         food.y = random(canvas.height / 10 - 1) * 10;
+        coin.x = random(canvas.width / 10 - 1) * 10;
+        coin.y = random(canvas.height / 10 - 1) * 10;
         gameover = false;
     };
     gameScene.paint = function (ctx) {
@@ -404,6 +424,9 @@
         // Draw food
         ctx.strokeStyle = '#f00';
         food.drawImage(ctx, iFood);
+        // Draw coin
+        ctx.strokeStyle = '#f00';
+        coin.drawImage(ctx, iCoin);
         // Draw score
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'left';
@@ -480,6 +503,14 @@
                 food.y = random(canvas.height / 10 - 1) * 10;
                 aEat.play();
             }
+            // Coin Intersects
+            if (body[0].intersects(coin)) {
+                score += 5;
+                changeQueryParam();
+                coin.x = random(canvas.width / 10 - 1) * 10;
+                coin.y = random(canvas.height / 10 - 1) * 10;
+                aEat.play();
+            }
                 // Wall Intersects
                 //for (i = 0, l = wall.length; i < l; i += 1) {
                 // if (food.intersects(wall[i])) {
@@ -540,5 +571,5 @@
     //For init to start when page load in order to avoid errors
     window.addEventListener('load', init, false);
     //To resize in any moment
-    window.addEventListener('resize', resize, false);
+    //window.addEventListener('resize', resize, false);
 }(window));

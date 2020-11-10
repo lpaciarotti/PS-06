@@ -1,0 +1,3 @@
+In this work you will see a 'Snake Game' html and js code. Both were obtained from the PDF given by the teachers. After copying the code given, a function to change the Query params from a URL was added and it was also added an element that gives extra points.
+In the js file you will see several parts of commented code due to functions developed in the PDF and no longer used in following steps (I preferred to remain some of them because they can be used in other times),
+You can play the game following this link: https://lpaciarotti.github.io/PS-06/
